@@ -22,6 +22,8 @@ import {
   ArrowUpRight,
   TrendingDown,
   ShieldCheck,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 const COLORS = [
@@ -63,6 +65,7 @@ function App() {
   const [editTxDescription, setEditTxDescription] = useState("");
 
   const [showAllTransactions, setShowAllTransactions] = useState(false);
+  const [showIncome, setShowIncome] = useState(true);
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -454,12 +457,21 @@ function App() {
 
               <div className="grid grid-cols-2 gap-x-8 lg:pl-12 lg:border-l border-gray-100 shrink-0">
                 <div className="space-y-1.5">
-                  <h3 className="text-[9px] font-bold uppercase tracking-widest text-gray-300">
-                    Projected
-                  </h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-[9px] font-bold uppercase tracking-widest text-gray-300">
+                      Projected
+                    </h3>
+                    <button
+                      onClick={() => setShowIncome(!showIncome)}
+                      className="p-1 text-gray-300 hover:text-gray-600 transition-all"
+                      title={showIncome ? "Hide income" : "Show income"}
+                    >
+                      {showIncome ? <Eye size={12} /> : <EyeOff size={12} />}
+                    </button>
+                  </div>
                   <p className="text-xl font-display italic text-gray-400 tabular-nums leading-none">
                     {selectedCurrency}
-                    {formatNumber(totalMonthlyIncome)}
+                    {showIncome ? formatNumber(totalMonthlyIncome) : "••••••"}
                   </p>
                 </div>
                 <div className="space-y-1.5">
