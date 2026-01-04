@@ -62,6 +62,8 @@ function App() {
   const [editTxAmount, setEditTxAmount] = useState("");
   const [editTxDescription, setEditTxDescription] = useState("");
 
+  const [showAllTransactions, setShowAllTransactions] = useState(false);
+
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -320,6 +322,38 @@ function App() {
               ]);
             }
           }
+
+          if (
+            type === "TRANSFER_BUDGET" &&
+            data?.fromCategory &&
+            data?.toCategory &&
+            data?.amount
+          ) {
+            const fromCat = data.fromCategory;
+            const toCat = data.toCategory;
+            const transferAmt = data.amount;
+
+            setBudgets((prev) => {
+              const fromBudget = prev.find(
+                (b) => b.category.toLowerCase() === fromCat.toLowerCase()
+              );
+              const toBudget = prev.find(
+                (b) => b.category.toLowerCase() === toCat.toLowerCase()
+              );
+
+              if (!fromBudget || !toBudget) return prev;
+
+              return prev.map((b) => {
+                if (b.category.toLowerCase() === fromCat.toLowerCase()) {
+                  return { ...b, limit: Math.max(0, b.limit - transferAmt) };
+                }
+                if (b.category.toLowerCase() === toCat.toLowerCase()) {
+                  return { ...b, limit: b.limit + transferAmt };
+                }
+                return b;
+              });
+            });
+          }
         });
       }
 
@@ -506,10 +540,14 @@ function App() {
                   <h4 className="text-[10px] font-bold uppercase tracking-[0.4em] text-gray-400">
                     Recent Activity
                   </h4>
-                  <span className="text-[9px] font-display text-gray-400">
-                    {transactions.length}{" "}
-                    {transactions.length === 1 ? "entry" : "entries"}
-                  </span>
+                  {transactions.length > 10 && (
+                    <button
+                      onClick={() => setShowAllTransactions(true)}
+                      className="text-[9px] font-bold uppercase tracking-wider text-gray-400 hover:text-black transition-all"
+                    >
+                      View All ({transactions.length})
+                    </button>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   {transactions.length === 0 ? (
@@ -523,7 +561,7 @@ function App() {
                       </p>
                     </div>
                   ) : (
-                    transactions.map((tx) => {
+                    transactions.slice(0, 10).map((tx) => {
                       const sentenceCaseDesc =
                         tx.description.charAt(0).toUpperCase() +
                         tx.description.slice(1).toLowerCase();
@@ -885,6 +923,99 @@ function App() {
               >
                 Synchronize All
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Transaction History Modal */}
+      {showAllTransactions && (
+        <div className="fixed inset-0 bg-white/60 backdrop-blur-2xl z-[110] flex items-center justify-center p-6">
+          <div className="bg-white w-full max-w-2xl max-h-[90vh] shadow-premium border border-gray-50 flex flex-col overflow-hidden">
+            <div className="flex justify-between items-center p-6 border-b border-gray-100">
+              <h2 className="text-2xl font-display tracking-tight italic">
+                Transaction History
+              </h2>
+              <button
+                onClick={() => setShowAllTransactions(false)}
+                className="p-2 text-gray-300 hover:text-black"
+              >
+                <X size={24} strokeWidth={1} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 no-scrollbar">
+              {(() => {
+                const groupedByMonth = transactions.reduce((acc, tx) => {
+                  const date = new Date(tx.date);
+                  const monthKey = `${date.getFullYear()}-${String(
+                    date.getMonth() + 1
+                  ).padStart(2, "0")}`;
+                  if (!acc[monthKey]) acc[monthKey] = [];
+                  acc[monthKey].push(tx);
+                  return acc;
+                }, {} as Record<string, Transaction[]>);
+
+                const sortedMonths = Object.keys(groupedByMonth)
+                  .sort()
+                  .reverse();
+
+                return sortedMonths.map((monthKey) => {
+                  const [year, month] = monthKey.split("-");
+                  const monthName = new Date(
+                    parseInt(year),
+                    parseInt(month) - 1
+                  ).toLocaleDateString("en-US", {
+                    month: "long",
+                    year: "numeric",
+                  });
+                  const monthTransactions = groupedByMonth[monthKey];
+                  const monthTotal = monthTransactions.reduce(
+                    (sum, tx) => sum + tx.amount,
+                    0
+                  );
+
+                  return (
+                    <div key={monthKey} className="mb-8 last:mb-0">
+                      <div className="flex justify-between items-center mb-4 pb-2 border-b border-gray-200">
+                        <h3 className="text-base font-bold text-gray-900">
+                          {monthName}
+                        </h3>
+                        <span className="font-display text-lg text-brand-pink italic tabular-nums">
+                          -{selectedCurrency}
+                          {formatNumber(monthTotal)}
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        {monthTransactions.map((tx) => {
+                          const sentenceCaseDesc =
+                            tx.description.charAt(0).toUpperCase() +
+                            tx.description.slice(1).toLowerCase();
+                          return (
+                            <div
+                              key={tx.id}
+                              className="flex justify-between items-center py-2 px-3 hover:bg-gray-50 transition-all"
+                            >
+                              <div className="flex-1 min-w-0 mr-4">
+                                <p className="font-semibold text-sm text-gray-900 truncate">
+                                  {sentenceCaseDesc}
+                                </p>
+                                <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">
+                                  {tx.category} • {tx.date}
+                                </p>
+                              </div>
+                              <span className="font-display text-sm text-brand-pink tabular-nums">
+                                -{selectedCurrency}
+                                {formatNumber(tx.amount)}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
             </div>
           </div>
         </div>

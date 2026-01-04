@@ -38,12 +38,21 @@ export interface ChatMessage {
 }
 
 export interface GeminiAction {
-  type: "LOG_EXPENSE" | "CREATE_BUDGET" | "REQUEST_BUDGET_CREATION" | "NONE";
+  type:
+    | "LOG_EXPENSE"
+    | "CREATE_BUDGET"
+    | "REQUEST_BUDGET_CREATION"
+    | "TRANSFER_BUDGET"
+    | "GIVE_ADVICE"
+    | "NONE";
   data?: {
     amount?: number;
     category?: string;
     item?: string;
     limit?: number;
+    fromCategory?: string;
+    toCategory?: string;
+    advice?: string;
   };
 }
 

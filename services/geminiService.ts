@@ -29,6 +29,8 @@ const RESPONSE_SCHEMA: Schema = {
               "LOG_EXPENSE",
               "CREATE_BUDGET",
               "REQUEST_BUDGET_CREATION",
+              "TRANSFER_BUDGET",
+              "GIVE_ADVICE",
               "NONE",
             ],
           },
@@ -40,6 +42,9 @@ const RESPONSE_SCHEMA: Schema = {
               limit: { type: Type.NUMBER },
               category: { type: Type.STRING },
               item: { type: Type.STRING },
+              fromCategory: { type: Type.STRING },
+              toCategory: { type: Type.STRING },
+              advice: { type: Type.STRING },
             },
           },
         },
@@ -114,6 +119,18 @@ export const processUserMessage = async (
        - Include a suggested limit (e.g., 5000 or higher than the expense)
        - Include the original amount to log the transaction
        - Include the item description
+    
+    6. FINANCIAL ADVICE (use GIVE_ADVICE action):
+       - When user asks "can I afford X?" or "how much can I spend on Y?"
+       - Calculate based on current surplus and budget remaining
+       - Be honest and practical
+       - Example: "You have $2,500 remaining. You can afford the $800 laptop."
+    
+    7. BUDGET TRANSFERS (use TRANSFER_BUDGET action):
+       - When user says "move X from A to B" or "transfer X from A budget to B"
+       - Include fromCategory, toCategory, and amount
+       - Confirm the transfer in your message
+       - Example: "Moved $500 from Food to Entertainment."
     
     Examples:
     - "I spent 4500 on tangerine, 2k on chocolate, 5k on my sister" should create 3 actions:
