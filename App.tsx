@@ -250,6 +250,44 @@ function App() {
               ...prev,
             ]);
           }
+
+          if (type === "CREATE_BUDGET" && data?.category && data?.limit) {
+            const cat = data.category;
+            const limit = data.limit;
+            const amt = data.amount || 0;
+
+            setBudgets((prev) => {
+              const exists = prev.find(
+                (b) => b.category.toLowerCase() === cat.toLowerCase()
+              );
+              if (exists) return prev;
+
+              return [
+                ...prev,
+                {
+                  id: Date.now().toString() + index,
+                  category: cat,
+                  limit: limit,
+                  spent: amt,
+                  color: COLORS[prev.length % COLORS.length],
+                },
+              ];
+            });
+
+            if (amt > 0) {
+              setTransactions((prev) => [
+                {
+                  id: Date.now().toString() + index,
+                  amount: amt,
+                  category: cat,
+                  description: data.item || "Expense",
+                  date: new Date().toLocaleDateString(),
+                  currency: selectedCurrency,
+                },
+                ...prev,
+              ]);
+            }
+          }
         });
       }
 
