@@ -442,8 +442,8 @@ function App() {
 
             {/* Core Values */}
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-              <div className="flex items-baseline">
-                <span className="text-2xl md:text-3xl font-display font-light text-gray-200 italic mr-3 select-none leading-none">
+              <div className="flex items-baseline gap-3">
+                <span className="text-2xl md:text-3xl font-display font-light text-gray-200 italic select-none leading-none">
                   {selectedCurrency}
                 </span>
                 <h1
@@ -451,8 +451,15 @@ function App() {
                     currentSurplus < 0 ? "text-brand-pink" : "text-black"
                   }`}
                 >
-                  {formatNumber(currentSurplus)}
+                  {showIncome ? formatNumber(currentSurplus) : "••••••"}
                 </h1>
+                <button
+                  onClick={() => setShowIncome(!showIncome)}
+                  className="p-2 text-gray-300 hover:text-gray-600 transition-all self-center"
+                  title={showIncome ? "Hide amounts" : "Show amounts"}
+                >
+                  {showIncome ? <Eye size={20} /> : <EyeOff size={20} />}
+                </button>
               </div>
 
               <div className="grid grid-cols-2 gap-x-8 lg:pl-12 lg:border-l border-gray-100 shrink-0">
@@ -480,7 +487,7 @@ function App() {
                   </h3>
                   <p className="text-xl font-display italic text-gray-400 tabular-nums leading-none">
                     {selectedCurrency}
-                    {formatNumber(totalSpentInCycle)}
+                    {showIncome ? formatNumber(totalSpentInCycle) : "••••••"}
                   </p>
                 </div>
               </div>
