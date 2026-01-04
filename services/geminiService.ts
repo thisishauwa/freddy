@@ -77,30 +77,43 @@ export const processUserMessage = async (
 
     Instructions:
     1. Parse ALL expenses mentioned in the user's message, even if there are multiple.
-    2. For each expense, determine the appropriate category using these rules:
+    
+    2. For each expense, FIRST check the existing budgets list above:
+       - Look for an EXACT or CLOSE match in the existing budgets
+       - If a matching budget exists, use LOG_EXPENSE with that exact budget name
+       - Only suggest a new category if NO existing budget fits
+    
+    3. Category matching rules (only if creating new budget):
        
-       FOOD ITEMS (use "Food" category):
+       FOOD ITEMS (suggest "Food" category):
        - Fruits: tangerine, orange, apple, banana, etc.
        - Snacks: chocolate, candy, chips, etc.
        - Restaurants: Chowdeck, McDonald's, KFC, etc.
        - Groceries: supermarket, grocery, etc.
        
-       TRANSPORT (use "Transport" category):
+       TRANSPORT (suggest "Transport" category):
        - Uber, Lyft, taxi, bus, train, gas, fuel
        
-       PERSONAL/FAMILY (use "Personal" category):
+       PERSONAL/FAMILY (suggest "Personal" category):
        - Payments to people: "my sister", "John", "mom", "friend"
        - Gifts, loans to individuals
        
-       LIFESTYLE (use "Lifestyle" category):
+       LIFESTYLE (suggest "Lifestyle" category):
        - Entertainment: movies, concerts, games
        - Shopping: clothes, accessories, electronics
        - Subscriptions: Netflix, Spotify, gym
        
-    3. If a category exists in the budgets, use LOG_EXPENSE action.
-    4. If a category doesn't exist, use REQUEST_BUDGET_CREATION action and ask the user if they want to create it.
-    5. When user confirms budget creation (says "yes", "ok", "sure", etc.), use CREATE_BUDGET action with the category and suggested limit.
-    6. Return multiple actions if there are multiple expenses.
+    4. Action logic:
+       - If matching budget EXISTS → LOG_EXPENSE with exact budget name
+       - If NO matching budget → REQUEST_BUDGET_CREATION and ask user
+       - When user confirms (says "yes", "ok", "sure", "create it", etc.) → CREATE_BUDGET with category, limit, and amount
+    
+    5. IMPORTANT: When user confirms budget creation, you MUST:
+       - Use CREATE_BUDGET action
+       - Include the category name
+       - Include a suggested limit (e.g., 5000 or higher than the expense)
+       - Include the original amount to log the transaction
+       - Include the item description
     
     Examples:
     - "I spent 4500 on tangerine, 2k on chocolate, 5k on my sister" should create 3 actions:
