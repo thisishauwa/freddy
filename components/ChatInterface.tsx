@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Bot, ShieldCheck } from "lucide-react";
+import { Send, Bot, Image as ImageIcon } from "lucide-react";
 import { ChatMessage } from "../types";
 
 interface Props {
   messages: ChatMessage[];
-  onSendMessage: (text: string) => Promise<void>;
+  onSendMessage: (text: string, image?: File) => Promise<void>;
   isTyping: boolean;
 }
 
@@ -14,7 +14,9 @@ const ChatInterface: React.FC<Props> = ({
   isTyping,
 }) => {
   const [input, setInput] = useState("");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -26,10 +28,19 @@ const ChatInterface: React.FC<Props> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
-    const text = input;
+    if (!input.trim() && !selectedImage) return;
+    const text = input || "Uploaded receipt";
+    const image = selectedImage;
     setInput("");
-    await onSendMessage(text);
+    setSelectedImage(null);
+    await onSendMessage(text, image || undefined);
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      setSelectedImage(file);
+    }
   };
 
   return (
@@ -87,17 +98,46 @@ const ChatInterface: React.FC<Props> = ({
 
       {/* Input Overlay */}
       <div className="p-4 bg-white border-t border-gray-100 sticky bottom-0 shrink-0 mb-20 md:mb-0">
+        {selectedImage && (
+          <div className="mb-2 flex items-center gap-2 p-2 bg-gray-50 border border-gray-200">
+            <ImageIcon size={16} className="text-gray-400" />
+            <span className="text-xs text-gray-600 flex-1 truncate">
+              {selectedImage.name}
+            </span>
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="text-xs text-gray-400 hover:text-black"
+            >
+              Remove
+            </button>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="flex items-center gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageSelect}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="p-3 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-black border border-gray-100 transition-all shrink-0"
+            title="Upload receipt"
+          >
+            <ImageIcon size={16} />
+          </button>
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Log expense, ask question..."
+            placeholder="Log expense, upload receipt..."
             className="flex-1 bg-gray-50 text-black placeholder:text-gray-300 px-4 py-3 focus:outline-none text-sm border border-gray-100 focus:border-gray-300 transition-all"
           />
           <button
             type="submit"
-            disabled={!input.trim() || isTyping}
+            disabled={(!input.trim() && !selectedImage) || isTyping}
             className="p-3 bg-black text-white hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 shrink-0"
           >
             <Send size={16} />

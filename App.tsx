@@ -290,22 +290,23 @@ function App() {
     setEditingTransaction(null);
   };
 
-  const handleSendMessage = async (text: string) => {
+  const handleSendMessage = async (text: string, image?: File) => {
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
       role: "user",
-      text,
+      text: image ? `${text} [Receipt uploaded]` : text,
       timestamp: Date.now(),
     };
     setMessages((prev) => [...prev, userMsg]);
     setIsTyping(true);
     try {
-      const response: GeminiResponse = await processUserMessage(
+      const response = await processUserMessage(
         text,
         [...messages, userMsg],
         budgets,
         incomes,
-        transactions
+        transactions,
+        image
       );
 
       // Process all actions

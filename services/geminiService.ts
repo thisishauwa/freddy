@@ -11,6 +11,21 @@ const genAI = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
 
 const MODEL_NAME = "gemini-2.5-flash";
 
+// Helper function to convert File to base64
+async function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result as string;
+      // Remove data URL prefix (e.g., "data:image/png;base64,")
+      const base64Data = base64.split(",")[1];
+      resolve(base64Data);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 const RESPONSE_SCHEMA: Schema = {
   type: Type.OBJECT,
   properties: {
@@ -55,13 +70,14 @@ const RESPONSE_SCHEMA: Schema = {
   required: ["message", "actions"],
 };
 
-export const processUserMessage = async (
+export async function processUserMessage(
   userText: string,
   chatHistory: ChatMessage[],
   budgets: Budget[],
   incomeStreams: IncomeStream[],
-  recentTransactions: Transaction[]
-): Promise<GeminiResponse> => {
+  recentTransactions: Transaction[],
+  imageFile?: File
+): Promise<GeminiResponse> {
   const budgetContext = budgets
     .map((b) => `${b.category}: Limit ${b.limit}, Current ${b.spent}`)
     .join("\n");
@@ -147,9 +163,39 @@ export const processUserMessage = async (
   `;
 
   try {
+    let contents: any = prompt;
+
+    // If image is provided, convert to base64 and add to contents
+    if (imageFile) {
+      const base64Image = await fileToBase64(imageFile);
+      const imagePrompt = `
+      You received a receipt image. Extract the following information:
+      - Total amount spent
+      - Merchant/vendor name
+      - Date (if visible)
+      - Items purchased (if visible)
+      
+      Then log this as an expense to the appropriate budget category.
+      If the merchant name suggests a category (e.g., restaurant -> Food), use that.
+      Otherwise, ask the user which category to use.
+      
+      User's additional notes: ${userText}
+      `;
+
+      contents = [
+        { text: imagePrompt + "\n\n" + prompt },
+        {
+          inlineData: {
+            mimeType: imageFile.type,
+            data: base64Image,
+          },
+        },
+      ];
+    }
+
     const response = await genAI.models.generateContent({
       model: MODEL_NAME,
-      contents: prompt,
+      contents,
       config: {
         responseMimeType: "application/json",
         responseSchema: RESPONSE_SCHEMA,
@@ -164,4 +210,4 @@ export const processUserMessage = async (
       actions: [{ type: "NONE" }],
     };
   }
-};
+}
