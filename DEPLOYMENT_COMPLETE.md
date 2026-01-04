@@ -16,7 +16,7 @@ All code is now on GitHub and ready to deploy to Vercel!
 4. Vercel will auto-detect **Vite**
 5. **Add Environment Variable**:
    - Name: `VITE_API_KEY`
-   - Value: `AIzaSyBJcG15laz2gcT2-h5HFCus_EKitqz9iCg` (your Gemini API key)
+   - Value: Your Google Gemini API key (get it from https://aistudio.google.com/app/apikey)
 6. Click **"Deploy"**
 
 Done! Your app will be live in ~2 minutes.
