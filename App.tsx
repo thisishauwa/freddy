@@ -47,7 +47,7 @@ function App() {
   );
   const [payday, setPayday] = useState<number>(1);
   const [paydayInput, setPaydayInput] = useState<string>("1");
-  const [lastResetMonth, setLastResetMonth] = useState<number>(-1);
+  const [lastResetMonth, setLastResetMonth] = useState<string>("");
 
   const [isTyping, setIsTyping] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -67,6 +67,37 @@ function App() {
   const [showAllTransactions, setShowAllTransactions] = useState(false);
   const [showIncome, setShowIncome] = useState(true);
 
+  // Check and reset budgets on payday
+  useEffect(() => {
+    if (isOnboarded && payday > 0) {
+      const today = new Date();
+      const currentDay = today.getDate();
+      const currentMonth = today.getMonth();
+      const currentYear = today.getFullYear();
+
+      // Check if today is payday and we haven't reset this month
+      if (currentDay === payday) {
+        const monthKey = `${currentYear}-${currentMonth}`;
+        if (lastResetMonth !== monthKey) {
+          // Reset all budget spent amounts to 0
+          setBudgets((prev) => prev.map((b) => ({ ...b, spent: 0 })));
+          setLastResetMonth(monthKey);
+
+          // Add a system message to chat
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: Date.now().toString(),
+              role: "model",
+              text: "Budget cycle reset. All allocations refreshed for the new period.",
+              timestamp: Date.now(),
+            },
+          ]);
+        }
+      }
+    }
+  }, [isOnboarded, payday, lastResetMonth]);
+
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -79,7 +110,7 @@ function App() {
         setSelectedCurrency(parsed.selectedCurrency || Currency.USD);
         setPayday(parsed.payday || 1);
         setPaydayInput((parsed.payday || 1).toString());
-        setLastResetMonth(parsed.lastResetMonth ?? -1);
+        setLastResetMonth(parsed.lastResetMonth ?? "");
         setIsOnboarded(parsed.isOnboarded === true);
       } catch (e) {
         setIsOnboarded(false);
@@ -94,7 +125,6 @@ function App() {
       localStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({
-          isOnboarded,
           budgets,
           incomes,
           messages,
@@ -102,6 +132,7 @@ function App() {
           selectedCurrency,
           payday,
           lastResetMonth,
+          isOnboarded: true,
         })
       );
     }
@@ -115,6 +146,38 @@ function App() {
     payday,
     lastResetMonth,
   ]);
+
+  // Check for budget reset on mount and daily
+  useEffect(() => {
+    if (isOnboarded && payday > 0) {
+      const checkReset = () => {
+        const today = new Date();
+        const currentDay = today.getDate();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+        const monthKey = `${currentYear}-${currentMonth}`;
+
+        if (currentDay === payday && lastResetMonth !== monthKey) {
+          setBudgets((prev) => prev.map((b) => ({ ...b, spent: 0 })));
+          setLastResetMonth(monthKey);
+
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: Date.now().toString(),
+              role: "model",
+              text: "Budget cycle reset. All allocations refreshed for the new period.",
+              timestamp: Date.now(),
+            },
+          ]);
+        }
+      };
+
+      checkReset();
+      const interval = setInterval(checkReset, 1000 * 60 * 60); // Check every hour
+      return () => clearInterval(interval);
+    }
+  }, [isOnboarded, payday, lastResetMonth]);
 
   const handleOnboardingComplete = (
     newIncome: IncomeStream[],
@@ -135,7 +198,8 @@ function App() {
         timestamp: Date.now(),
       },
     ]);
-    setLastResetMonth(new Date().getFullYear() * 12 + new Date().getMonth());
+    const today = new Date();
+    setLastResetMonth(`${today.getFullYear()}-${today.getMonth()}`);
     setIsOnboarded(true);
   };
 
