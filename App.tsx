@@ -500,12 +500,9 @@ function App() {
             </div>
 
             {/* Audit Trail Sidecar */}
-            <div className="lg:col-span-4">
-              <section
-                className="bg-white border border-gray-50 shadow-premium p-5 flex flex-col"
-                style={{ maxHeight: "600px" }}
-              >
-                <div className="flex justify-between items-center border-b border-gray-100 pb-3 mb-4">
+            <div className="lg:col-span-4 space-y-5">
+              <section className="space-y-4">
+                <div className="flex justify-between items-center border-b border-gray-100 pb-2">
                   <h4 className="text-[10px] font-bold uppercase tracking-[0.4em] text-gray-400">
                     Recent Activity
                   </h4>
@@ -514,7 +511,7 @@ function App() {
                     {transactions.length === 1 ? "entry" : "entries"}
                   </span>
                 </div>
-                <div className="flex-1 overflow-y-auto space-y-1.5 pr-2 no-scrollbar">
+                <div className="space-y-1.5">
                   {transactions.length === 0 ? (
                     <div className="py-20 text-center">
                       <div className="text-gray-200 text-4xl mb-3">📊</div>
@@ -533,28 +530,30 @@ function App() {
                       return (
                         <div
                           key={tx.id}
-                          className="flex justify-between items-center p-3 bg-gray-50 hover:bg-white border border-transparent hover:border-gray-200 transition-all group cursor-pointer"
+                          className="flex justify-between items-center py-2.5 px-3 bg-white border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-all group"
                         >
                           <div className="min-w-0 flex-1 mr-3">
-                            <p className="font-semibold text-[13px] text-gray-900 truncate leading-tight mb-1">
+                            <p className="font-semibold text-[12px] text-gray-900 truncate leading-tight">
                               {sentenceCaseDesc}
                             </p>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="text-[8px] text-gray-400 font-bold uppercase tracking-wider">
                                 {tx.category}
                               </span>
-                              <span className="text-gray-300">•</span>
-                              <span className="text-[9px] text-gray-400">
+                              <span className="text-gray-300 text-[8px]">
+                                •
+                              </span>
+                              <span className="text-[8px] text-gray-400">
                                 {tx.date}
                               </span>
                             </div>
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
-                            <span className="font-display font-semibold text-base text-brand-pink tabular-nums leading-none">
+                            <span className="font-display font-medium text-sm text-brand-pink tabular-nums leading-none">
                               -{selectedCurrency}
                               {formatNumber(tx.amount)}
                             </span>
-                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -562,20 +561,20 @@ function App() {
                                   setEditTxAmount(tx.amount.toString());
                                   setEditTxDescription(tx.description);
                                 }}
-                                className="p-1.5 text-gray-300 hover:text-black hover:bg-gray-100 transition-all"
+                                className="p-1 text-gray-300 hover:text-black transition-all"
                                 title="Edit"
                               >
-                                <Settings2 size={12} />
+                                <Settings2 size={11} />
                               </button>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleDeleteTransaction(tx.id);
                                 }}
-                                className="p-1.5 text-gray-300 hover:text-brand-pink hover:bg-pink-50 transition-all"
+                                className="p-1 text-gray-300 hover:text-brand-pink transition-all"
                                 title="Delete"
                               >
-                                <Trash2 size={12} />
+                                <Trash2 size={11} />
                               </button>
                             </div>
                           </div>
