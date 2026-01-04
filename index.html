@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Freddy Financial</title>
+    <!-- Font Imports -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+      rel="stylesheet"
+    />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "ui-sans-serif", "system-ui"],
+              display: ["EB Garamond", "serif"],
+            },
+            colors: {
+              brand: {
+                black: "#000000",
+                blue: "#007AFF",
+                pink: "#FF2D55",
+                lime: "#34C759",
+                yellow: "#FFCC00",
+              },
+            },
+            boxShadow: {
+              premium: "0 10px 40px -10px rgba(0, 0, 0, 0.04)",
+              minimal: "0 1px 2px 0 rgba(0, 0, 0, 0.01)",
+              hover: "0 20px 50px -12px rgba(0, 0, 0, 0.06)",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      * {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+      }
+      *::-webkit-scrollbar {
+        display: none !important;
+      }
+
+      body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        letter-spacing: -0.015em;
+        background-color: #fdfdfd;
+        color: #111;
+        overflow: hidden;
+      }
+
+      input[type="number"]::-webkit-inner-spin-button,
+      input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      * {
+        border-radius: 2px !important;
+      }
+
+      * {
+        transition-property: background-color, border-color, color, fill, stroke,
+          opacity, box-shadow, transform;
+        transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+        transition-duration: 350ms;
+      }
+
+      input:focus,
+      textarea:focus,
+      select:focus {
+        outline: none !important;
+        box-shadow: none !important;
+      }
+
+      #root {
+        height: 100vh;
+        width: 100vw;
+      }
+
+      .no-scrollbar {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+    </style>
+  </head>
+  <body class="font-sans">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
