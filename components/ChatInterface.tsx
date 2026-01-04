@@ -60,10 +60,10 @@ const ChatInterface: React.FC<Props> = ({
             }`}
           >
             <div
-              className={`max-w-[85%] px-4 py-2.5 text-[13px] leading-relaxed ${
+              className={`max-w-[80%] px-3.5 py-2 text-[13px] leading-relaxed ${
                 msg.role === "user"
-                  ? "bg-black text-white shadow-sm"
-                  : "bg-white text-gray-800 border border-gray-100 shadow-sm"
+                  ? "bg-gray-900 text-white"
+                  : "bg-gray-50 text-gray-900 border-l-2 border-gray-300"
               }`}
             >
               {msg.text}

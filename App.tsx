@@ -57,6 +57,11 @@ function App() {
   const [editLimit, setEditLimit] = useState("");
   const [editCategory, setEditCategory] = useState("");
 
+  const [editingTransaction, setEditingTransaction] =
+    useState<Transaction | null>(null);
+  const [editTxAmount, setEditTxAmount] = useState("");
+  const [editTxDescription, setEditTxDescription] = useState("");
+
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -187,6 +192,33 @@ function App() {
           : b
       )
     );
+  };
+
+  const handleUpdateTransaction = () => {
+    if (!editingTransaction || !editTxAmount || !editTxDescription) return;
+    const newAmount = parseFloat(editTxAmount);
+    if (isNaN(newAmount) || newAmount <= 0) return;
+
+    const oldAmount = editingTransaction.amount;
+    const diff = newAmount - oldAmount;
+
+    setTransactions((prev) =>
+      prev.map((t) =>
+        t.id === editingTransaction.id
+          ? { ...t, amount: newAmount, description: editTxDescription }
+          : t
+      )
+    );
+
+    setBudgets((prev) =>
+      prev.map((b) =>
+        b.category === editingTransaction.category
+          ? { ...b, spent: b.spent + diff }
+          : b
+      )
+    );
+
+    setEditingTransaction(null);
   };
 
   const handleSendMessage = async (text: string) => {
@@ -468,50 +500,88 @@ function App() {
             </div>
 
             {/* Audit Trail Sidecar */}
-            <div className="lg:col-span-4 space-y-5">
-              <section className="space-y-4">
-                <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+            <div className="lg:col-span-4">
+              <section
+                className="bg-white border border-gray-50 shadow-premium p-5 flex flex-col"
+                style={{ maxHeight: "600px" }}
+              >
+                <div className="flex justify-between items-center border-b border-gray-100 pb-3 mb-4">
                   <h4 className="text-[10px] font-bold uppercase tracking-[0.4em] text-gray-400">
-                    Audit Trail
+                    Recent Activity
                   </h4>
-                  <span className="text-[9px] font-display text-gray-200 italic">
-                    {transactions.length} records
+                  <span className="text-[9px] font-display text-gray-400">
+                    {transactions.length}{" "}
+                    {transactions.length === 1 ? "entry" : "entries"}
                   </span>
                 </div>
-                <div className="space-y-2">
+                <div className="flex-1 overflow-y-auto space-y-1.5 pr-2 no-scrollbar">
                   {transactions.length === 0 ? (
-                    <div className="py-16 text-center text-gray-200 text-sm font-display italic opacity-50">
-                      Ledger clear for current cycle.
+                    <div className="py-20 text-center">
+                      <div className="text-gray-200 text-4xl mb-3">📊</div>
+                      <p className="text-gray-300 text-sm font-medium">
+                        No transactions yet
+                      </p>
+                      <p className="text-gray-200 text-xs mt-1">
+                        Start logging your expenses
+                      </p>
                     </div>
                   ) : (
-                    transactions.slice(0, 15).map((tx) => (
-                      <div
-                        key={tx.id}
-                        className="flex justify-between items-center p-3 bg-white border border-gray-50 shadow-minimal hover:border-gray-100 transition-all group"
-                      >
-                        <div className="min-w-0 flex-1">
-                          <p className="font-semibold text-[12px] text-gray-800 truncate leading-tight">
-                            {tx.description}
-                          </p>
-                          <p className="text-[8px] text-gray-400 font-bold uppercase tracking-widest mt-0.5 truncate">
-                            {tx.category} &bull; {tx.date}
-                          </p>
+                    transactions.map((tx) => {
+                      const sentenceCaseDesc =
+                        tx.description.charAt(0).toUpperCase() +
+                        tx.description.slice(1).toLowerCase();
+                      return (
+                        <div
+                          key={tx.id}
+                          className="flex justify-between items-center p-3 bg-gray-50 hover:bg-white border border-transparent hover:border-gray-200 transition-all group cursor-pointer"
+                        >
+                          <div className="min-w-0 flex-1 mr-3">
+                            <p className="font-semibold text-[13px] text-gray-900 truncate leading-tight mb-1">
+                              {sentenceCaseDesc}
+                            </p>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">
+                                {tx.category}
+                              </span>
+                              <span className="text-gray-300">•</span>
+                              <span className="text-[9px] text-gray-400">
+                                {tx.date}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="font-display font-semibold text-base text-brand-pink tabular-nums leading-none">
+                              -{selectedCurrency}
+                              {formatNumber(tx.amount)}
+                            </span>
+                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingTransaction(tx);
+                                  setEditTxAmount(tx.amount.toString());
+                                  setEditTxDescription(tx.description);
+                                }}
+                                className="p-1.5 text-gray-300 hover:text-black hover:bg-gray-100 transition-all"
+                                title="Edit"
+                              >
+                                <Settings2 size={12} />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteTransaction(tx.id);
+                                }}
+                                className="p-1.5 text-gray-300 hover:text-brand-pink hover:bg-pink-50 transition-all"
+                                title="Delete"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 ml-4 shrink-0">
-                          <span className="font-display font-medium text-lg text-brand-pink italic tabular-nums leading-none">
-                            -{selectedCurrency}
-                            {formatNumber(tx.amount)}
-                          </span>
-                          <button
-                            onClick={() => handleDeleteTransaction(tx.id)}
-                            className="opacity-0 group-hover:opacity-100 p-1 text-gray-300 hover:text-brand-pink transition-all"
-                            title="Delete transaction"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               </section>
@@ -615,6 +685,65 @@ function App() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Transaction Edit Modal */}
+      {editingTransaction && (
+        <div className="fixed inset-0 bg-white/60 backdrop-blur-2xl z-[100] flex items-center justify-center p-6">
+          <div className="bg-white w-full max-w-sm p-8 shadow-premium border border-gray-50">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-display tracking-tight italic">
+                Edit Transaction
+              </h2>
+              <button
+                onClick={() => setEditingTransaction(null)}
+                className="p-2 text-gray-300 hover:text-black"
+              >
+                <X size={24} strokeWidth={1} />
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <label className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.3em] block mb-2">
+                  Description
+                </label>
+                <input
+                  type="text"
+                  value={editTxDescription}
+                  onChange={(e) => setEditTxDescription(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-100 px-4 py-3 text-base font-semibold transition-all"
+                  placeholder="e.g., Groceries"
+                />
+              </div>
+
+              <div className="bg-gray-50 p-6 border border-gray-100 text-center">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em] mb-4">
+                  Amount
+                </p>
+                <div className="flex items-center justify-center">
+                  <span className="text-3xl font-display font-light text-gray-200 mr-3 italic select-none leading-none">
+                    {selectedCurrency}
+                  </span>
+                  <input
+                    autoFocus
+                    type="number"
+                    value={editTxAmount}
+                    onChange={(e) => setEditTxAmount(e.target.value)}
+                    className="bg-transparent border-none text-5xl font-display w-full italic tabular-nums leading-none"
+                  />
+                </div>
+              </div>
+
+              <button
+                onClick={handleUpdateTransaction}
+                className="w-full py-5 bg-black text-white font-bold text-[10px] uppercase tracking-[0.4em] shadow-lg hover:bg-gray-900 active:scale-95 transition-all"
+              >
+                Update Transaction
+              </button>
+            </div>
           </div>
         </div>
       )}

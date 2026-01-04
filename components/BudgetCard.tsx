@@ -77,11 +77,11 @@ const BudgetCard: React.FC<Props> = ({
       </div>
 
       <div className="flex justify-between items-center w-full">
-        <div className="flex items-baseline min-w-0 mr-4">
+        <div className="flex items-baseline min-w-0 mr-3 overflow-hidden">
           <span className="text-[13px] font-display font-light text-gray-200 mr-1.5 select-none italic leading-none shrink-0">
             {currencySymbol}
           </span>
-          <span className="text-[26px] font-display font-medium text-black italic leading-none tabular-nums truncate">
+          <span className="text-[24px] font-display font-medium text-black not-italic leading-none tabular-nums overflow-hidden text-ellipsis">
             {formatNumber(budget.spent)}
           </span>
         </div>
