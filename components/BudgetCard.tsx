@@ -21,7 +21,10 @@ const BudgetCard: React.FC<Props> = ({
   const isClose = !isOver && percentage > 85;
 
   const formatNumber = (num: number) => {
-    return new Intl.NumberFormat("en-US").format(num);
+    return new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(num);
   };
 
   return (
